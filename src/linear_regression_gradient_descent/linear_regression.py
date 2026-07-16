@@ -40,7 +40,7 @@ class LinearRegression:
 
   def _initialize_coefs(self, X: npt.NDArray[np.float64]) -> None:
     self._n_coefs = X.shape[1] + 1
-    self._coefs = np.zeros(self._n_coefs)
+    self._coefs = np.zeros(shape=(self._n_coefs))
 
   def _cost_function(self):
     mses = 0
@@ -50,7 +50,7 @@ class LinearRegression:
     converged = False
 
     while not converged:
-      next_coefs = np.copy(self._n_coefs)
+      next_coefs = np.copy(self._coefs)
 
       for i, coef in enumerate(self._coefs):
         next_coef = self._compute_next_coef(index=i)
@@ -60,7 +60,7 @@ class LinearRegression:
 
       self._coefs = next_coefs
 
-      print(next_coefs, converged)
+      # print(next_coefs, converged)
 
     return
 
@@ -68,7 +68,7 @@ class LinearRegression:
     return self._coefs[index] - self._learning_rate * self._cost_function_partial_derivative(index)
 
   def _cost_function_partial_derivative(self, index: int) -> float:
-    return (1/self._n) * np.sum(self._X_base.dot(self._hypothesis() - self._y))
+    return (1/self._n) * np.sum(self._X_base[:, index] * (self._hypothesis() - self._y))
 
   def _hypothesis(self) -> npt.NDArray[np.float64]:
     return self._X_base.dot(self._coefs)
