@@ -9,7 +9,7 @@ class LinearRegression:
   _n_coefs: int
   _coefs: npt.NDArray[np.float64]
 
-  def __init__(self, learning_rate: float):
+  def __init__(self, learning_rate: float = 0.1):
     self._learning_rate = learning_rate
     self._n = 0
     self._n_coefs = 1

@@ -23,7 +23,7 @@ def main():
 
   res = LinearRegression().fit(X, y)
 
-  print(res.get_coefficients())
+  print(res.get_coefs())
 
 
 if __name__ == '__main__':
