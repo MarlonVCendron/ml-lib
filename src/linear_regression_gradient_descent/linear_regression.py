@@ -7,7 +7,8 @@ logger = logging.getLogger(__name__)
 
 
 class LinearRegression:
-  _classification: float
+  _discrete: float
+  _max_iters: int
   _lr: float
   _n: int
   _n_params: int
@@ -15,9 +16,11 @@ class LinearRegression:
   _X: npt.NDArray[np.float64]
   _y: npt.NDArray[np.float64]
   _X_base: npt.NDArray[np.float64]
+  _cost_runs: npt.NDArray[np.float64]
 
-  def __init__(self, classification: bool = False, lr: float = 0.001):
-    self._classification = classification
+  def __init__(self, discrete: bool = False, max_iters: int = 1_000_000_000, lr: float = 0.001):
+    self._discrete = discrete
+    self._max_iters = max_iters
     self._lr = lr
     self._n = 0
     self._n_params = 1
@@ -25,6 +28,7 @@ class LinearRegression:
     self._X = np.zeros(shape=(self._n_params - 1, self._n))
     self._y = np.zeros(shape=(self._n))
     self._X_base = np.zeros(shape=(self._n_params, self._n))
+    self._cost_runs = np.array([])
 
   def fit(self, X: npt.NDArray[np.float64], y: npt.NDArray[np.float64]) -> Self:
     assert X.shape[0] == y.shape[0], 'Shape mismatch between X and y'
@@ -43,9 +47,9 @@ class LinearRegression:
   def summary(self) -> str:
     total_cost = np.sum(self._cost_function(self._X_base, self._y))
     res = self.predict(self._X)
-    
+
     accuracy = (len(res) - np.count_nonzero(res - self._y)) / len(res)
-      
+
     return (
         f'Accuracy: {accuracy:.2f}\n'
         f'Total cost: {total_cost:.2f}'
@@ -54,10 +58,13 @@ class LinearRegression:
   def predict(self, X: npt.NDArray[np.float64]) -> npt.NDArray[np.float64]:
     X_base = np.c_[np.ones(X.shape[0]), X]
     hypothesis = self._hypothesis(X_base)
-    if self._classification:
+    if self._discrete:
       return np.round(hypothesis)
     else:
       return hypothesis
+
+  def get_cost_through_runs(self) -> npt.NDArray[np.float64]:
+    return self._cost_runs
 
   def get_params(self) -> npt.NDArray[np.float64]:
     return self._params
@@ -68,27 +75,33 @@ class LinearRegression:
 
   def _gradient_descent(self) -> None:
     converged = False
+    iter_count = 0
 
     while not converged:
+      if iter_count > self._max_iters:
+        logger.error(f'Reached maximum number of iterations: {self._max_iters}')
+        break
+
       next_params = np.copy(self._params)
+
+      self._cost_runs = np.append(self._cost_runs, self._cost_function(self._X_base, self._y))
 
       for i in range(self._n_params):
         next_param = self._compute_next_param(index=i)
         next_params[i] = next_param
 
       if np.any(np.isinf(next_params)):
-        logger.error('paramficients diverged')
+        logger.error('Parameters diverged')
         break
 
       if np.any(np.isnan(next_params)):
-        logger.error('Failed to converge paramficients')
+        logger.error('Failed to converge parameters')
         break
 
-      converged = abs(np.sum(next_params - self._params)) < 0.0001
+      converged = abs(np.sum(next_params - self._params)) < 1e-10
 
       self._params = next_params
-
-    return
+      iter_count += 1
 
   def _compute_next_param(self, index: int) -> float:
     return self._params[index] - self._lr * self._cost_function_partial_derivative(index)

@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import numpy.typing as npt
+import matplotlib.pyplot as plt
 from pathlib import Path
 
 from .linear_regression import LinearRegression
@@ -21,9 +22,12 @@ def load_data() -> tuple[npt.NDArray[np.float64], npt.NDArray[np.float64]]:
 def main():
   X, y = load_data()
 
-  res = LinearRegression(classification=True, lr=0.00001).fit(X, y)
+  model = LinearRegression(discrete=True, max_iters=50_000, lr=0.00001).fit(X, y)
 
-  print(res.summary())
+  print(model.summary())
+
+  _ = plt.plot(model.get_cost_through_runs())
+  plt.show()
 
 
 if __name__ == '__main__':
