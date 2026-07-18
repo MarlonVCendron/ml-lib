@@ -1,10 +1,12 @@
 from typing import Self
+import logging
 import numpy as np
 import numpy.typing as npt
 
+logger = logging.getLogger(__name__)
 
 class LinearRegression:
-  _learning_rate: float
+  _lr: float
   _n: int
   _n_coefs: int
   _coefs: npt.NDArray[np.float64]
@@ -12,8 +14,8 @@ class LinearRegression:
   _y: npt.NDArray[np.float64]
   _X_base: npt.NDArray[np.float64]
 
-  def __init__(self, learning_rate: float = 0.1):
-    self._learning_rate = learning_rate
+  def __init__(self, lr: float = 0.001):
+    self._lr = lr
     self._n = 0
     self._n_coefs = 1
     self._coefs = np.zeros(shape=(self._n_coefs))
@@ -27,7 +29,7 @@ class LinearRegression:
     self._X = X
     self._y = y
     self._n = X.shape[0]
-    self._X_base = np.c_[np.ones(self._n), self._X] # Add ones for coef_0
+    self._X_base = np.c_[np.ones(self._n), self._X]  # Add ones for coef_0
 
     self._initialize_coefs(X)
 
@@ -52,26 +54,32 @@ class LinearRegression:
     while not converged:
       next_coefs = np.copy(self._coefs)
 
-      for i, coef in enumerate(self._coefs):
+      for i in range(self._n_coefs):
         next_coef = self._compute_next_coef(index=i)
         next_coefs[i] = next_coef
+      
+      if np.any(np.isinf(next_coefs)):
+        logger.error('Coefficients diverged')
+        break
 
-      converged = np.all(next_coefs == self._coefs)
+      if np.any(np.isnan(next_coefs)):
+        logger.error('Failed to converge coefficients')
+        break
+
+      converged = abs(np.sum(next_coefs - self._coefs)) < 0.001
 
       self._coefs = next_coefs
-
-      # print(next_coefs, converged)
 
     return
 
   def _compute_next_coef(self, index: int) -> float:
-    return self._coefs[index] - self._learning_rate * self._cost_function_partial_derivative(index)
+    return self._coefs[index] - self._lr * self._cost_function_partial_derivative(index)
 
   def _cost_function_partial_derivative(self, index: int) -> float:
-    return (1/self._n) * np.sum(self._X_base[:, index] * (self._hypothesis() - self._y))
+    error = self._hypothesis() - self._y
+    xs = self._X_base[:, index]
+    return (1/self._n) * np.sum(xs * error)
 
   def _hypothesis(self) -> npt.NDArray[np.float64]:
     return self._X_base.dot(self._coefs)
 
-  def _has_converged(self) -> bool:
-    return True
