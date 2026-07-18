@@ -6,8 +6,10 @@ from pathlib import Path
 
 from .linear_regression import LinearRegression
 
-DATA_PATH = Path.cwd() / 'data' / 'diabetes.csv'
-Y_COL = 'Outcome'
+# DATA_PATH = Path.cwd() / 'data' / 'diabetes.csv'
+# Y_COL = 'Outcome'
+DATA_PATH = Path.cwd() / 'data' / 'advertising.csv'
+Y_COL = 'Sales'
 
 
 def load_data() -> tuple[npt.NDArray[np.float64], npt.NDArray[np.float64]]:
@@ -22,7 +24,7 @@ def load_data() -> tuple[npt.NDArray[np.float64], npt.NDArray[np.float64]]:
 def main():
   x, y = load_data()
 
-  model = LinearRegression(discrete=True, max_iters=50_000, lr=0.00001).fit(x, y)
+  model = LinearRegression(max_iters=50_000, lr=0.00001).fit(x, y)
 
   print(model.summary())
 

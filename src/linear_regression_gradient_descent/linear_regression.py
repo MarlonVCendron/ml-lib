@@ -7,7 +7,6 @@ logger = logging.getLogger(__name__)
 
 
 class LinearRegression:
-  _discrete: float
   _max_iters: int
   _lr: float
   _n: int
@@ -18,8 +17,7 @@ class LinearRegression:
   _X: npt.NDArray[np.float64]
   _cost_runs: npt.NDArray[np.float64]
 
-  def __init__(self, discrete: bool = False, max_iters: int = 1_000_000_000, lr: float = 0.001):
-    self._discrete = discrete
+  def __init__(self, max_iters: int = 1_000_000_000, lr: float = 0.001):
     self._max_iters = max_iters
     self._lr = lr
     self._n = 0
@@ -46,22 +44,13 @@ class LinearRegression:
 
   def summary(self) -> str:
     total_cost = np.sum(self._cost_function(self._X, self._y))
-    res = self.predict(self._x)
 
-    accuracy = (len(res) - np.count_nonzero(res - self._y)) / len(res)
-
-    return (
-        f'Accuracy: {accuracy:.4f}\n'
-        f'Total cost: {total_cost:.4f}'
-    )
+    return f'Total cost: {total_cost:.4f}'
 
   def predict(self, x: npt.NDArray[np.float64]) -> npt.NDArray[np.float64]:
     X = np.c_[np.ones(x.shape[0]), x]
     hypothesis = self._hypothesis(X)
-    if self._discrete:
-      return np.round(hypothesis)
-    else:
-      return hypothesis
+    return hypothesis
 
   def get_cost_through_runs(self) -> npt.NDArray[np.float64]:
     return self._cost_runs
@@ -98,7 +87,7 @@ class LinearRegression:
         logger.error('Failed to converge parameters')
         break
 
-      converged = abs(np.sum(next_params - self._params)) < 1e-10
+      converged = abs(np.sum(next_params - self._params)) < 1e-4
 
       self._params = next_params
       iter_count += 1
