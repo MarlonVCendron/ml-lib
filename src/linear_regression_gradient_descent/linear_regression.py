@@ -44,10 +44,7 @@ class LinearRegression:
     total_cost = np.sum(self._cost_function(self._X_base, self._y))
     res = self.predict(self._X)
     
-    if self._classification:
-      accuracy = (len(res) - np.count_nonzero(np.round(res - self._y))) / len(res)
-    else:
-      accuracy = (len(res) - np.count_nonzero(res - self._y)) / len(res)
+    accuracy = (len(res) - np.count_nonzero(res - self._y)) / len(res)
       
     return (
         f'Accuracy: {accuracy:.2f}\n'
@@ -56,7 +53,11 @@ class LinearRegression:
 
   def predict(self, X: npt.NDArray[np.float64]) -> npt.NDArray[np.float64]:
     X_base = np.c_[np.ones(X.shape[0]), X]
-    return self._hypothesis(X_base)
+    hypothesis = self._hypothesis(X_base)
+    if self._classification:
+      return np.round(hypothesis)
+    else:
+      return hypothesis
 
   def get_params(self) -> npt.NDArray[np.float64]:
     return self._params
