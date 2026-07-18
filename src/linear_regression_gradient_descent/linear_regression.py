@@ -13,9 +13,9 @@ class LinearRegression:
   _n: int
   _n_params: int
   _params: npt.NDArray[np.float64]
-  _X: npt.NDArray[np.float64]
+  _x: npt.NDArray[np.float64]
   _y: npt.NDArray[np.float64]
-  _X_base: npt.NDArray[np.float64]
+  _X: npt.NDArray[np.float64]
   _cost_runs: npt.NDArray[np.float64]
 
   def __init__(self, discrete: bool = False, max_iters: int = 1_000_000_000, lr: float = 0.001):
@@ -25,18 +25,18 @@ class LinearRegression:
     self._n = 0
     self._n_params = 1
     self._params = np.zeros(shape=(self._n_params))
-    self._X = np.zeros(shape=(self._n_params - 1, self._n))
+    self._x = np.zeros(shape=(self._n_params - 1, self._n))
     self._y = np.zeros(shape=(self._n))
-    self._X_base = np.zeros(shape=(self._n_params, self._n))
+    self._X = np.zeros(shape=(self._n_params, self._n))
     self._cost_runs = np.array([])
 
-  def fit(self, X: npt.NDArray[np.float64], y: npt.NDArray[np.float64]) -> Self:
-    assert X.shape[0] == y.shape[0], 'Shape mismatch between X and y'
+  def fit(self, x: npt.NDArray[np.float64], y: npt.NDArray[np.float64]) -> Self:
+    assert x.shape[0] == y.shape[0], 'Shape mismatch between x and y'
 
-    self._X = X
+    self._x = x
     self._y = y
-    self._n = X.shape[0]
-    self._X_base = np.c_[np.ones(self._n), self._X]  # Add ones for param_0
+    self._n = x.shape[0]
+    self._X = np.c_[np.ones(self._n), self._x]  # Add ones for param_0
 
     self._initialize_params()
 
@@ -45,19 +45,19 @@ class LinearRegression:
     return self
 
   def summary(self) -> str:
-    total_cost = np.sum(self._cost_function(self._X_base, self._y))
-    res = self.predict(self._X)
+    total_cost = np.sum(self._cost_function(self._X, self._y))
+    res = self.predict(self._x)
 
     accuracy = (len(res) - np.count_nonzero(res - self._y)) / len(res)
 
     return (
-        f'Accuracy: {accuracy:.2f}\n'
-        f'Total cost: {total_cost:.2f}'
+        f'Accuracy: {accuracy:.4f}\n'
+        f'Total cost: {total_cost:.4f}'
     )
 
-  def predict(self, X: npt.NDArray[np.float64]) -> npt.NDArray[np.float64]:
-    X_base = np.c_[np.ones(X.shape[0]), X]
-    hypothesis = self._hypothesis(X_base)
+  def predict(self, x: npt.NDArray[np.float64]) -> npt.NDArray[np.float64]:
+    X = np.c_[np.ones(x.shape[0]), x]
+    hypothesis = self._hypothesis(X)
     if self._discrete:
       return np.round(hypothesis)
     else:
@@ -70,7 +70,7 @@ class LinearRegression:
     return self._params
 
   def _initialize_params(self) -> None:
-    self._n_params = self._X.shape[1] + 1
+    self._n_params = self._x.shape[1] + 1
     self._params = np.zeros(shape=(self._n_params))
 
   def _gradient_descent(self) -> None:
@@ -84,7 +84,7 @@ class LinearRegression:
 
       next_params = np.copy(self._params)
 
-      self._cost_runs = np.append(self._cost_runs, self._cost_function(self._X_base, self._y))
+      self._cost_runs = np.append(self._cost_runs, self._cost_function(self._X, self._y))
 
       for i in range(self._n_params):
         next_param = self._compute_next_param(index=i)
@@ -107,8 +107,8 @@ class LinearRegression:
     return self._params[index] - self._lr * self._cost_function_partial_derivative(index)
 
   def _cost_function_partial_derivative(self, index: int) -> float:
-    error = self._hypothesis(self._X_base) - self._y
-    xs = self._X_base[:, index]
+    error = self._hypothesis(self._X) - self._y
+    xs = self._X[:, index]
     return (1/self._n) * np.sum(xs * error)
 
   def _cost_function(self, X: npt.NDArray[np.float64], y: npt.NDArray[np.float64]) -> npt.NDArray[np.float64]:

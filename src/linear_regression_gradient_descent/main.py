@@ -13,16 +13,16 @@ Y_COL = 'Outcome'
 def load_data() -> tuple[npt.NDArray[np.float64], npt.NDArray[np.float64]]:
   df = pd.read_csv(DATA_PATH)
 
-  X = df.loc[:, df.columns != Y_COL].to_numpy()
+  x = df.loc[:, df.columns != Y_COL].to_numpy()
   y = df[Y_COL].to_numpy()
 
-  return X, y
+  return x, y
 
 
 def main():
-  X, y = load_data()
+  x, y = load_data()
 
-  model = LinearRegression(discrete=True, max_iters=50_000, lr=0.00001).fit(X, y)
+  model = LinearRegression(discrete=True, max_iters=50_000, lr=0.00001).fit(x, y)
 
   print(model.summary())
 
