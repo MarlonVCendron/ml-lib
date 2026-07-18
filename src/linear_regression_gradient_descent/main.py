@@ -21,7 +21,7 @@ def load_data() -> tuple[npt.NDArray[np.float64], npt.NDArray[np.float64]]:
 def main():
   X, y = load_data()
 
-  res = LinearRegression(lr=0.00001).fit(X, y)
+  res = LinearRegression(classification=True, lr=0.00001).fit(X, y)
 
   print(res.summary())
 
