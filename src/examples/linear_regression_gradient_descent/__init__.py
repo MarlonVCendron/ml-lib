@@ -4,7 +4,7 @@ import numpy.typing as npt
 import matplotlib.pyplot as plt
 from pathlib import Path
 
-from .linear_regression import LinearRegression
+from ml_lib.linear_regression import LinearRegression
 
 # DATA_PATH = Path.cwd() / 'data' / 'diabetes.csv'
 # Y_COL = 'Outcome'

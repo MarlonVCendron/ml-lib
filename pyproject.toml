@@ -1,5 +1,5 @@
 [project]
-name = "linear-regression-gradient-descent"
+name = "ml-lib"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
@@ -14,7 +14,7 @@ dependencies = [
 ]
 
 [project.scripts]
-linear-regression-gradient-descent = "linear_regression_gradient_descent:package_main"
+linear-regression-gradient-descent = "examples.linear_regression_gradient_descent:main"
 
 [build-system]
 requires = ["uv_build>=0.11.28,<0.12.0"]
